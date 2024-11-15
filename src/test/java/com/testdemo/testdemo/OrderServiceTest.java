@@ -108,6 +108,70 @@ public class OrderServiceTest {
 	}
 
 	@Test
+	void findOrdersByCustomerId_validInput_success () {
+		Customer customer = createCustomer(1L, "first-name-1", "last-name-1", "email-1", "description-1");
+		Product product = createProduct(1L, 1d, "name-1");
+		Order order =createOrder(1L, customer, product, 1);
+
+		when(orderRepository.findByCustomerId(any())).thenReturn(List.of(order));
+
+		List<OrderResponse> orderResponse = orderService.getCustomerOrders(customer.getId());
+
+		assertThat(orderResponse).isNotNull();
+		assertThat(orderResponse.size()).isEqualTo(1);
+		assertThat(orderResponse.get(0)).isNotNull();
+		assertThat(orderResponse.get(0).getCustomer()).isNotNull();
+		assertThat(orderResponse.get(0).getCustomer().getFirstName()).isEqualTo("first-name-1");
+		assertThat(orderResponse.get(0).getCustomer().getDescription()).isEqualTo("description-1");
+	}
+
+	@Test
+	void findOrdersByProductId_validInput_success () {
+		Customer customer = createCustomer(1L, "first-name-1", "last-name-1", "email-1", "description-1");
+		Product product = createProduct(1L, 1d, "name-1");
+		Order order =createOrder(1L, customer, product, 1);
+
+		when(orderRepository.findByProductId(any())).thenReturn(List.of(order));
+
+		List<OrderResponse> orderResponse = orderService.getProductOrders(product.getId());
+
+		assertThat(orderResponse).isNotNull();
+		assertThat(orderResponse.size()).isEqualTo(1);
+		assertThat(orderResponse.get(0)).isNotNull();
+		assertThat(orderResponse.get(0).getProduct()).isNotNull();
+		assertThat(orderResponse.get(0).getProduct().getName()).isEqualTo("name-1");
+		assertThat(orderResponse.get(0).getProduct().getPrice()).isEqualTo(1d);
+	}
+
+	@Test
+	void findOrdersByCustomerId_invalidInput_fail () {
+		Customer customer = createCustomer(1L, "first-name-1", "last-name-1", "email-1", "description-1");
+		Product product = createProduct(1L, 1d, "name-1");
+		Order order =createOrder(1L, customer, product, 1);
+
+		when(orderRepository.findByCustomerId(any())).thenReturn(new ArrayList<>());
+
+		List<OrderResponse> orderResponse = orderService.getCustomerOrders(-55L);
+
+		assertThat(orderResponse).isNotNull();
+		assertThat(orderResponse.size()).isEqualTo(0);
+	}
+
+	@Test
+	void findOrdersByProductId_invalidInput_fail () {
+		Customer customer = createCustomer(1L, "first-name-1", "last-name-1", "email-1", "description-1");
+		Product product = createProduct(1L, 1d, "name-1");
+		Order order =createOrder(1L, customer, product, 1);
+
+		when(orderRepository.findByProductId(any())).thenReturn(new ArrayList<>());
+
+		List<OrderResponse> orderResponse = orderService.getProductOrders(-55L);
+
+		assertThat(orderResponse).isNotNull();
+		assertThat(orderResponse.size()).isEqualTo(0);
+	}
+
+	@Test
 	void findOrderById_inValidInput_fail () {
 		when(orderRepository.findById(any())).thenReturn(Optional.empty());
 
@@ -221,6 +285,15 @@ public class OrderServiceTest {
 		order.setId(orderId);
 		order.setCustomer(createCustomer(customerId, customerFirstName, customerLastName, customerEmail, customerDescription));
 		order.setProduct(createProduct(productId, productPrice, productName));
+		order.setCount(count);
+		return order;
+	}
+
+	private Order createOrder (Long orderId, Customer customer, Product product, Integer count) {
+		Order order = new Order();
+		order.setId(orderId);
+		order.setCustomer(customer);
+		order.setProduct(product);
 		order.setCount(count);
 		return order;
 	}

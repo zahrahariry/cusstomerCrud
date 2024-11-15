@@ -282,6 +282,110 @@ public class OrderControllerIT {
 	}
 
 	@Test
+	void getOrdersByCustomerId_success () {
+
+		Customer customer = createCustomer("first-name-1", "last-name-1", "email-1", "description-1");
+
+		Product product = createProduct(1d, "name-1");
+
+		createOrder(customer, product, 1);
+
+		ResponseEntity<List<OrderResponse>> orderResponses= restTemplate.exchange(
+				createURLWithPort("/order/customer/"+ customer.getId()),
+				HttpMethod.GET,
+				null,
+				new ParameterizedTypeReference<List<OrderResponse>>() {}
+		);
+
+		assertThat(orderResponses).isNotNull();
+		assertThat(orderResponses.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(orderResponses.getBody()).isNotNull();
+		assertThat(orderResponses.getBody().size()).isEqualTo(1);
+		OrderResponse orderResponse = orderResponses.getBody().get(0);
+		assertThat(orderResponse).isNotNull();
+		assertThat(orderResponse.getId()).isNotNull();
+		assertThat(orderResponse.getCustomer()).isNotNull();
+		assertThat(orderResponse.getCustomer().getId()).isNotNull();
+		assertThat(orderResponse.getCustomer().getId()).isEqualTo(customer.getId());
+		assertThat(orderResponse.getCustomer().getEmail()).isEqualTo("email-1");
+		assertThat(orderResponse.getCustomer().getLastName()).isEqualTo("last-name-1");
+	}
+
+	@Test
+	void getOrdersByProductId_success () {
+
+		Customer customer = createCustomer("first-name-1", "last-name-1", "email-1", "description-1");
+
+		Product product = createProduct(1d, "name-1");
+
+		createOrder(customer, product, 1);
+
+		ResponseEntity<List<OrderResponse>> orderResponses= restTemplate.exchange(
+				createURLWithPort("/order/product/"+ product.getId()),
+				HttpMethod.GET,
+				null,
+				new ParameterizedTypeReference<List<OrderResponse>>() {}
+		);
+
+		assertThat(orderResponses).isNotNull();
+		assertThat(orderResponses.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(orderResponses.getBody()).isNotNull();
+		assertThat(orderResponses.getBody().size()).isEqualTo(1);
+		OrderResponse orderResponse = orderResponses.getBody().get(0);
+		assertThat(orderResponse).isNotNull();
+		assertThat(orderResponse.getId()).isNotNull();
+		assertThat(orderResponse.getProduct()).isNotNull();
+		assertThat(orderResponse.getProduct().getId()).isNotNull();
+		assertThat(orderResponse.getProduct().getId()).isEqualTo(customer.getId());
+		assertThat(orderResponse.getProduct().getName()).isEqualTo("name-1");
+		assertThat(orderResponse.getProduct().getPrice()).isEqualTo(1d);
+	}
+
+	@Test
+	void getOrdersByCustomerId_fail () {
+
+		Customer customer = createCustomer("first-name-1", "last-name-1", "email-1", "description-1");
+
+		Product product = createProduct(1d, "name-1");
+
+		createOrder(customer, product, 1);
+
+		ResponseEntity<List<OrderResponse>> orderResponses= restTemplate.exchange(
+				createURLWithPort("/order/customer/"+ -55L),
+				HttpMethod.GET,
+				null,
+				new ParameterizedTypeReference<List<OrderResponse>>() {}
+		);
+
+		assertThat(orderResponses).isNotNull();
+		assertThat(orderResponses.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(orderResponses.getBody()).isNotNull();
+		assertThat(orderResponses.getBody().size()).isEqualTo(0);
+	}
+
+	@Test
+	void getOrdersByProductId_fail () {
+
+		Customer customer = createCustomer("first-name-1", "last-name-1", "email-1", "description-1");
+
+		Product product = createProduct(1d, "name-1");
+
+		createOrder(customer, product, 1);
+
+		ResponseEntity<List<OrderResponse>> orderResponses= restTemplate.exchange(
+				createURLWithPort("/order/product/"+ -55L),
+				HttpMethod.GET,
+				null,
+				new ParameterizedTypeReference<List<OrderResponse>>() {}
+		);
+
+		assertThat(orderResponses).isNotNull();
+		assertThat(orderResponses.getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(orderResponses.getBody()).isNotNull();
+		assertThat(orderResponses.getBody().size()).isEqualTo(0);
+	}
+
+	@Test
 	void updateOrder_inValidInput_fail () {
 		createOrder("first-name-1", "last-name-1", "email-1", "description-1",
 				"name-1", 1d, 1);
@@ -335,6 +439,15 @@ public class OrderControllerIT {
 		Order order = new Order();
 		order.setCustomer(createCustomer(customerFirstName, customerLastName, customerEmail, customerDescription));
 		order.setProduct(createProduct(productPrice, productName));
+		order.setCount(count);
+		Order savedOrder = orderRepository.save(order);
+		return savedOrder.getId();
+	}
+
+	private Long createOrder (Customer  customer, Product product, Integer count) {
+		Order order = new Order();
+		order.setCustomer(customer);
+		order.setProduct(product);
 		order.setCount(count);
 		Order savedOrder = orderRepository.save(order);
 		return savedOrder.getId();

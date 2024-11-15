@@ -97,6 +97,14 @@ public class OrderService {
 				);
 	}
 
+	public List<OrderResponse> getCustomerOrders(Long customerId) {
+		return orderMapper.toOrderResponseList(orderRepository.findByCustomerId(customerId));
+	}
+
+	public List<OrderResponse> getProductOrders(Long productId) {
+		return orderMapper.toOrderResponseList(orderRepository.findByProductId(productId));
+	}
+
 	private Order getOrderById (Long orderId) {
 		return orderRepository.findById(orderId).orElse(null);
 	}

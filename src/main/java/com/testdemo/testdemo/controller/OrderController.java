@@ -65,4 +65,18 @@ public class OrderController {
 		orderService.deleteOrder(orderId);
 		return ResponseEntity.ok().build();
 	}
+
+	@GetMapping(path = "/customer/{customerId}")
+	@Operation(summary = "get orders by customerId")
+	public ResponseEntity<List<OrderResponse>> getOrdersByCustomerId (@PathVariable(name = "customerId") Long customerId) {
+		log.info("going to get orders by customerId : {}", customerId);
+		return ResponseEntity.ok(orderService.getCustomerOrders(customerId));
+	}
+
+	@GetMapping(path = "/product/{productId}")
+	@Operation(summary = "get orders by productId")
+	public ResponseEntity<List<OrderResponse>> getOrdersByProductId (@PathVariable(name = "productId") Long productId) {
+		log.info("going to get orders by productId : {}", productId);
+		return ResponseEntity.ok(orderService.getProductOrders(productId));
+	}
 }
